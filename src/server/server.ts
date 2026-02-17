@@ -1,0 +1,310 @@
+import {
+  createConnection,
+  TextDocuments,
+  ProposedFeatures,
+  InitializeParams,
+  InitializeResult,
+  TextDocumentSyncKind,
+  CompletionItem,
+  CompletionItemKind,
+  Hover,
+  HoverParams,
+  CompletionParams,
+  Diagnostic,
+  DiagnosticSeverity,
+  TextDocumentChangeEvent,
+  DefinitionParams,
+  Location,
+  Position,
+} from 'vscode-languageserver/node';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import * as path from 'path';
+import * as os from 'os';
+import { Logger } from './logger';
+
+// Set up logging to a file in the user's home directory
+const logPath = path.join('.', '.test-lsp', 'server.log');
+
+const logger = new Logger(logPath);
+
+// Create connection and document manager
+const connection = createConnection(ProposedFeatures.all);
+const documents = new TextDocuments(TextDocument);
+
+logger.setConnection(connection);
+logger.info('Language server starting...');
+logger.info(`Log file: ${logPath}`);
+
+connection.onInitialize((params: InitializeParams): InitializeResult => {
+  logger.info('Server initializing...', {
+    rootUri: params.rootUri,
+    capabilities: Object.keys(params.capabilities),
+  });
+
+  return {
+    capabilities: {
+      textDocumentSync: TextDocumentSyncKind.Incremental,
+      completionProvider: {
+        resolveProvider: true,
+        triggerCharacters: ['.'],
+      },
+      hoverProvider: true,
+      definitionProvider: true,
+    },
+  };
+});
+
+connection.onInitialized(() => {
+  logger.info('Server initialized successfully');
+});
+
+connection.onDidChangeTextDocument(() => {
+  logger.info('onDidChangeTextDocument')
+})
+
+connection.onNotification((method, params) => {
+  logger.info(`Notification received: ${method}`, { params });
+});
+
+connection.onRequest((method, params) => {
+  logger.info(`Request received: ${method}`, { params });
+  // Optionally, return null or undefined for unknown requests
+  return null;
+});
+
+documents.onWillSave((event) => {
+  logger.info('Document will save', { uri: event.document.uri });
+});
+
+documents.onWillSaveWaitUntil((event) => {
+  logger.info('Document will save (wait until)', { uri: event.document.uri });
+  return [];
+});
+
+
+
+// Provide completions
+connection.onCompletion((params: CompletionParams): CompletionItem[] => {
+  logger.info('Completion requested', {
+    uri: params.textDocument.uri,
+    position: params.position,
+  });
+
+  return [
+    {
+      label: 'hello',
+      kind: CompletionItemKind.Text,
+      detail: 'Says hello',
+      data: 1,
+    },
+    {
+      label: 'world',
+      kind: CompletionItemKind.Text,
+      detail: 'Says world',
+      data: 2,
+    },
+    {
+      label: 'testlsp',
+      kind: CompletionItemKind.Keyword,
+      detail: 'Test LSP keyword',
+      data: 3,
+    },
+  ];
+});
+
+connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+  logger.info('Completion resolve requested', { label: item.label });
+
+  if (item.data === 1) {
+    item.documentation = 'This inserts the word "hello"';
+  } else if (item.data === 2) {
+    item.documentation = 'This inserts the word "world"';
+  } else if (item.data === 3) {
+    item.documentation = 'This is a test keyword from the LSP';
+  }
+
+  return item;
+});
+
+// Provide hover information
+connection.onHover((params: HoverParams): Hover | null => {
+  logger.info('onHover')
+  const document = documents.get(params.textDocument.uri);
+  if (!document) {
+    return null;
+  }
+
+  const text = document.getText();
+  const offset = document.offsetAt(params.position);
+
+  // Find the word under the cursor
+  const wordRange = getWordAtOffset(text, offset);
+  if (!wordRange) {
+    return null;
+  }
+
+  const word = text.substring(wordRange.start, wordRange.end);
+  logger.info('Hover requested', { word, position: params.position });
+
+  // Return hover info for known words
+  const hoverInfo: Record<string, string> = {
+    hello: 'A greeting word',
+    world: 'The planet we live on',
+    testlsp: 'A keyword recognized by the Test LSP server',
+  };
+
+  if (hoverInfo[word.toLowerCase()]) {
+    return {
+      contents: {
+        kind: 'markdown',
+        value: `**${word}**\n\n${hoverInfo[word.toLowerCase()]}`,
+      },
+    };
+  }
+
+  return null;
+});
+
+// Go to definition for Workato connector method calls
+// Handles: call(:method_name, ...) → jumps to method_name: lambda do|{
+connection.onDefinition((params: DefinitionParams): Location | null => {
+  logger.info('go to def ', params)
+  const document = documents.get(params.textDocument.uri);
+  if (!document) {
+    return null;
+  }
+
+  const text = document.getText();
+  const line = document.getText({
+    start: { line: params.position.line, character: 0 },
+    end: { line: params.position.line + 1, character: 0 },
+  });
+
+  // Find if cursor is on a symbol inside call(:symbol_name
+  // Match call(:method_name with optional whitespace variations
+  const callPattern = /call\(\s*:(\w+)/g;
+  let match: RegExpExecArray | null;
+  let methodName: string | null = null;
+
+  while ((match = callPattern.exec(line)) !== null) {
+    // The symbol name starts after "call(:" and any whitespace
+    const symbolStart = match.index + match[0].length - match[1].length;
+    const symbolEnd = symbolStart + match[1].length;
+
+    if (params.position.character >= symbolStart && params.position.character <= symbolEnd) {
+      methodName = match[1];
+      break;
+    }
+  }
+
+  if (!methodName) {
+    logger.info('Definition requested but no call(:symbol) found at cursor', {
+      position: params.position,
+    });
+    return null;
+  }
+
+  logger.info('Go to definition requested', { methodName, position: params.position });
+
+  // Search for the method definition: method_name: lambda do  or  method_name: lambda {
+  const lines = text.split('\n');
+  const defPattern = new RegExp(`^(\\s*)${methodName}:\\s*lambda\\s*(do|\\{)`);
+
+  for (let i = 0; i < lines.length; i++) {
+    const defMatch = defPattern.exec(lines[i]);
+    if (defMatch) {
+      const charOffset = defMatch[1].length; // skip leading whitespace
+      logger.info('Definition found', { methodName, line: i, character: charOffset });
+      return Location.create(
+        params.textDocument.uri,
+        {
+          start: Position.create(i, charOffset),
+          end: Position.create(i, charOffset + methodName.length),
+        }
+      );
+    }
+  }
+
+  logger.warn('Definition not found', { methodName });
+  return null;
+});
+
+// Validate documents on change
+documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>) => {
+  logger.info('Document changed', { uri: change.document.uri });
+  validateDocument(change.document);
+});
+
+documents.onDidOpen((event) => {
+  logger.info('Document opened', { uri: event.document.uri });
+  validateDocument(event.document);
+});
+
+documents.onDidClose((event) => {
+  logger.info('Document closed', { uri: event.document.uri });
+  // Clear diagnostics when document is closed
+  connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
+});
+
+function validateDocument(document: TextDocument): void {
+  logger.info('validateDocument')
+  const text = document.getText();
+  const diagnostics: Diagnostic[] = [];
+
+  // Example diagnostic: flag lines containing "TODO"
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const todoIndex = lines[i].indexOf('TODO');
+    if (todoIndex !== -1) {
+      diagnostics.push({
+        severity: DiagnosticSeverity.Warning,
+        range: {
+          start: { line: i, character: todoIndex },
+          end: { line: i, character: todoIndex + 4 },
+        },
+        message: 'TODO found — don\'t forget to address this!',
+        source: 'test-lsp',
+      });
+    }
+  }
+
+  logger.info('Validation complete', {
+    uri: document.uri,
+    diagnosticCount: diagnostics.length,
+  });
+
+  connection.sendDiagnostics({ uri: document.uri, diagnostics });
+}
+
+function getWordAtOffset(
+  text: string,
+  offset: number
+): { start: number; end: number } | null {
+  if (offset < 0 || offset >= text.length) {
+    return null;
+  }
+
+  let start = offset;
+  let end = offset;
+
+  while (start > 0 && /\w/.test(text[start - 1])) {
+    start--;
+  }
+  while (end < text.length && /\w/.test(text[end])) {
+    end++;
+  }
+
+  if (start === end) {
+    return null;
+  }
+
+  return { start, end };
+}
+
+// Wire up documents to connection
+documents.listen(connection);
+
+// Start listening
+connection.listen();
+
+logger.info('Language server is listening');
