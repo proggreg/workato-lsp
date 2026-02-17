@@ -146,24 +146,100 @@ connection.onHover((params: HoverParams): Hover | null => {
   const word = text.substring(wordRange.start, wordRange.end);
   logger.info('Hover requested', { word, position: params.position });
 
-  // Return hover info for known words
-  const hoverInfo: Record<string, string> = {
-    hello: 'A greeting word',
-    world: 'The planet we live on',
-    testlsp: 'A keyword recognized by the Test LSP server',
-  };
+  if (!word) return null
 
-  if (hoverInfo[word.toLowerCase()]) {
+  const signature = getMethod(text, word)
+
+  if (signature) {
     return {
       contents: {
         kind: 'markdown',
-        value: `**${word}**\n\n${hoverInfo[word.toLowerCase()]}`,
-      },
-    };
+        value: ['```ruby', signature, '```'].join('\n')
+      }
+    }
   }
 
   return null;
 });
+
+function getMethod(text: string, word: string) {
+  const lines = text.split('\n')
+  const methodsStart = lines.findIndex((line) => line.includes('methods'))
+  let index = methodsStart
+  let methodDefintion = ''
+
+  while (true) {
+    const line = lines[index]
+
+    if (!line) continue
+
+    if (line.includes('lambda') && line.includes(word)) {
+      let margin = lines[index].search(/\S/);
+      if (margin === -1) margin = 0;
+      let i = index 
+      let end = false
+
+      while (!end) {
+        methodDefintion += lines[i].substring(margin) + '\n'
+
+        if (lines[i].includes('end')) {
+          break
+        }
+        i++
+      }
+    }
+
+    if (methodDefintion) {
+      break
+    }
+    index++
+  }
+
+  return methodDefintion
+}
+
+function getMethods(text: string) {
+  const lines = text.split('\n')
+  const methodsStart = lines.findIndex((line) => line.includes('methods'))
+  let index = methodsStart
+  const methods: any = {}
+  const braces = []
+  
+  while (true) {
+    const line = lines[index].trim()
+    logger.info('line', line)  
+
+    if (line.includes('{')) {
+      braces.push('{')
+    } else if (line.includes('}')) {
+      braces.pop()
+    }
+    if (line.includes('lambda')) {
+      const methodName = line.split(':').shift()
+      if (methodName) {
+        methods[methodName] = {} 
+        if (line.includes('|')) {
+          const params = line.split('|')
+          logger.info('method params', params)
+          if (params.length) {
+            const paramNames = params[1]
+            logger.info('params', paramNames)
+            methods[methodName] = {
+              params: paramNames
+            }
+          }
+        }
+      }
+    }
+
+    if (!braces.length) {
+      break
+    }
+    index++
+  }
+
+  return methods
+}
 
 // Go to definition for Workato connector method calls
 // Handles: call(:method_name, ...) → jumps to method_name: lambda do|{
@@ -178,7 +254,7 @@ connection.onDefinition((params: DefinitionParams): Location | null => {
   const line = document.getText({
     start: { line: params.position.line, character: 0 },
     end: { line: params.position.line + 1, character: 0 },
-  });
+  }); 
 
   // Find if cursor is on a symbol inside call(:symbol_name
   // Match call(:method_name with optional whitespace variations
