@@ -23,7 +23,7 @@ export function activate(context: ExtensionContext): void {
     },
   };
 
-  const outputChannel = window.createOutputChannel('Test LSP');
+  const outputChannel = window.createOutputChannel('Workato Connector LSP');
 
   const clientOptions: LanguageClientOptions = {
     // Activate for connector.rb files
