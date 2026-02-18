@@ -46,7 +46,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       completionProvider: {
         resolveProvider: true,
-        triggerCharacters: [':'],
+        triggerCharacters: [':', ','],
       },
       hoverProvider: true,
       definitionProvider: true,
@@ -109,6 +109,32 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
         label: methodName,
         kind: CompletionItemKind.Method
       }))
+    }
+  }
+
+  if (triggerCharacter === ',') {
+    if (isMethodLine) {
+      // Only trigger if there is exactly one comma in the line
+      const commaCount = (line.match(/,/g) || []).length;
+      if (commaCount === 1) {
+        const methodName = line.split('call(:')[1].split(',')[0];
+        const methods = getMethods(text);
+        const method = methods[methodName];
+        let completionText = method?.params;
+        
+        if (!line.includes(')')) {
+          completionText += ')'
+        }
+
+        logger.info('completion completionText', completionText);
+
+        if (completionText) {
+          return [{
+            label: completionText,
+            kind: CompletionItemKind.Variable
+          }];
+        }
+      }
     }
   }
 
@@ -213,9 +239,15 @@ function getMethods(text: string) {
   const methods: any = {}
   const braces = []
   
-  while (true) {
-    const line = lines[index].trim()
-    logger.info('line', line)  
+  while (index < lines.length) {
+    let line = lines[index]
+    logger.info('line', line) 
+    
+    if (!line) {
+      index++
+      continue
+    }
+    line = line.trim()
 
     if (line.includes('{')) {
       braces.push('{')
@@ -230,7 +262,7 @@ function getMethods(text: string) {
           const params = line.split('|')
           logger.info('method params', params)
           if (params.length) {
-            const paramNames = params[1]
+            const paramNames = params[1].split(',').map((param) => ' ' + param.trim()).join()
             logger.info('params', paramNames)
             methods[methodName] = {
               params: paramNames
