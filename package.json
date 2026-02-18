@@ -1,14 +1,22 @@
 {
   "name": "workato-connector-lsp",
   "displayName": "Workato Connector LSP",
+  "publisher": "gregfield",
   "description": "",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.75.0"
   },
-  "categories": ["Programming Languages"],
-  "activationEvents": ["onLanguage:ruby"],
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:ruby"
+  ],
   "main": "./out/client/extension.js",
+  "repository": {
+    "url": "https://github.com/proggreg/workato-lsp"
+  },
   "contributes": {
     "configuration": {
       "type": "object",
@@ -17,7 +25,11 @@
         "testLsp.trace.server": {
           "scope": "window",
           "type": "string",
-          "enum": ["off", "messages", "verbose"],
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
           "default": "verbose",
           "description": "Traces the communication between VS Code and the language server."
         }
@@ -27,7 +39,9 @@
   "scripts": {
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "package": "vsce package"
+    "bundle": "esbuild src/client/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+    "package": "npx vsce package",
+    "publish": "npx vsce publish"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1",
@@ -37,6 +51,7 @@
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.75.0",
+    "esbuild": "^0.27.3",
     "typescript": "^5.3.3"
   }
 }

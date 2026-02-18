@@ -16,16 +16,20 @@ import {
   DefinitionParams,
   Location,
   Position,
+  SymbolKind,
+  SymbolInformation,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as path from 'path';
 import * as os from 'os';
 import { Logger } from './logger';
+import { Range } from 'vscode-languageserver';
 
 // Set up logging to a file in the user's home directory
 const logPath = path.join('.', '.test-lsp', 'server.log');
 
 const logger = new Logger(logPath);
+const methods = new Map<string, { params: string, range: Range, uri: string }>()
 
 // Create connection and document manager
 const connection = createConnection(ProposedFeatures.all);
@@ -50,6 +54,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       },
       hoverProvider: true,
       definitionProvider: true,
+      documentSymbolProvider: true
     },
   };
 });
@@ -58,8 +63,32 @@ connection.onInitialized(() => {
   logger.info('Server initialized successfully');
 });
 
-connection.onDidChangeTextDocument(() => {
+connection.onDidOpenTextDocument(() => {
+  logger.info("onDidOpenTextDocument")
+})
+
+connection.onDidChangeTextDocument(({contentChanges, textDocument}) => {
   logger.info('onDidChangeTextDocument')
+  const text = contentChanges[contentChanges.length - 1].text;
+  // parseMethods(text, textDocument.uri as Uri)
+  logger.info('onDidChangeTextDocument methods', methods.size)
+})
+
+connection.onDocumentSymbol(({}) => {
+
+  const symbols: SymbolInformation[] = []
+
+  for (const [key, value] of methods.entries()) {
+    console.log(key, value);
+    const { range, uri } = value
+    
+    symbols.push({
+      name: key,
+      kind: SymbolKind.Method,
+      location: { range, uri: uri }
+    })
+  }
+    return symbols;
 })
 
 connection.onNotification((method, params) => {
@@ -81,17 +110,21 @@ documents.onWillSaveWaitUntil((event) => {
   return [];
 });
 
+
 // Provide completions
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   logger.info('Completion requested', params);
   const triggerCharacter = params.context?.triggerCharacter
   const document = documents.get(params.textDocument.uri);
 
+  
+
   if (!document) {
     return [];
   }
 
   const text = document.getText();
+  
   const line = document.getText({
     start: { line: params.position.line, character: 0 },
     end: { line: params.position.line + 1, character: 0 },
@@ -102,8 +135,7 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
 
   if (triggerCharacter === ':') {
     if (isMethodLine) {
-      const methods = getMethods(text)
-      const methodNames = Object.keys(methods)
+      const methodNames = Array.from(methods.keys())
       
       return methodNames.map((methodName) => ({
         label: methodName,
@@ -118,8 +150,7 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
       const commaCount = (line.match(/,/g) || []).length;
       if (commaCount === 1) {
         const methodName = line.split('call(:')[1].split(',')[0];
-        const methods = getMethods(text);
-        const method = methods[methodName];
+        const method = methods.get(methodName);
         let completionText = method?.params;
         
         if (!line.includes(')')) {
@@ -232,11 +263,10 @@ function getMethod(text: string, word: string) {
   return methodDefinition
 }
 
-function parseMethods(text: string) {
+function parseMethods(text: string, uri: string) {
   const lines = text.split(os.EOL)
   const methodsStart = lines.findIndex((line) => line.includes('methods'))
   let index = methodsStart
-  const methods: any = {}
   const braces = []
   
   while (index < lines.length) {
@@ -257,16 +287,21 @@ function parseMethods(text: string) {
     if (line.includes('lambda')) {
       const methodName = line.split(':').shift()
       if (methodName) {
-        methods[methodName] = {} 
         if (line.includes('|')) {
           const params = line.split('|')
           logger.info('method params', params)
           if (params.length) {
             const paramNames = params[1].split(',').map((param) => ' ' + param.trim()).join()
             logger.info('params', paramNames)
-            methods[methodName] = {
-              params: paramNames
-            }
+            const {range} = Location.create(
+              uri,
+              {
+                start: Position.create(index, 0),
+                end: Position.create(index, 0),
+              }
+            );
+            // const range = new Range({line: index, character: index}, index);
+            methods.set(methodName, { params: paramNames, range, uri })
           }
         }
       }
@@ -353,6 +388,8 @@ documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>) => 
 
 documents.onDidOpen((event) => {
   logger.info('Document opened', { uri: event.document.uri });
+  const text = event.document.getText()
+  parseMethods(text, event.document.uri)
   validateDocument(event.document);
 });
 
@@ -423,4 +460,4 @@ documents.listen(connection);
 // Start listening
 connection.listen();
 
-logger.info('Language server is listening');
+logger.info('Workato Connector Language server is listening');
