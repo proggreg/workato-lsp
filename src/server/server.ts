@@ -165,13 +165,17 @@ connection.onHover((params: HoverParams): Hover | null => {
 function getMethod(text: string, word: string) {
   const lines = text.split('\n')
   const methodsStart = lines.findIndex((line) => line.includes('methods'))
+  if (methodsStart === -1) return ''
   let index = methodsStart
-  let methodDefintion = ''
+  let methodDefinition = ''
 
-  while (true) {
+  while (index < lines.length) {
     const line = lines[index]
 
-    if (!line) continue
+    if (!line) {
+      index++
+      continue
+    }
 
     if (line.includes('lambda') && line.includes(word)) {
       let margin = lines[index].search(/\S/);
@@ -179,8 +183,8 @@ function getMethod(text: string, word: string) {
       let i = index 
       let end = false
 
-      while (!end) {
-        methodDefintion += lines[i].substring(margin) + '\n'
+      while (!end && i < lines.length) {
+        methodDefinition += lines[i].substring(margin) + '\n'
 
         if (lines[i].includes('end')) {
           break
@@ -189,13 +193,13 @@ function getMethod(text: string, word: string) {
       }
     }
 
-    if (methodDefintion) {
+    if (methodDefinition) {
       break
     }
     index++
   }
 
-  return methodDefintion
+  return methodDefinition
 }
 
 function getMethods(text: string) {
