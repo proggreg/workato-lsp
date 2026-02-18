@@ -232,8 +232,8 @@ function getMethod(text: string, word: string) {
   return methodDefinition
 }
 
-function getMethods(text: string) {
-  const lines = text.split('\n')
+function parseMethods(text: string) {
+  const lines = text.split(os.EOL)
   const methodsStart = lines.findIndex((line) => line.includes('methods'))
   let index = methodsStart
   const methods: any = {}
