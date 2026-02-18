@@ -46,7 +46,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       completionProvider: {
         resolveProvider: true,
-        triggerCharacters: ['.'],
+        triggerCharacters: [':'],
       },
       hoverProvider: true,
       definitionProvider: true,
@@ -81,40 +81,44 @@ documents.onWillSaveWaitUntil((event) => {
   return [];
 });
 
-
-
 // Provide completions
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
-  logger.info('Completion requested', {
-    uri: params.textDocument.uri,
-    position: params.position,
-  });
+  logger.info('Completion requested', params);
+  const triggerCharacter = params.context?.triggerCharacter
+  const document = documents.get(params.textDocument.uri);
 
-  return [
-    {
-      label: 'hello',
-      kind: CompletionItemKind.Text,
-      detail: 'Says hello',
-      data: 1,
-    },
-    {
-      label: 'world',
-      kind: CompletionItemKind.Text,
-      detail: 'Says world',
-      data: 2,
-    },
-    {
-      label: 'testlsp',
-      kind: CompletionItemKind.Keyword,
-      detail: 'Test LSP keyword',
-      data: 3,
-    },
-  ];
+  if (!document) {
+    return [];
+  }
+
+  const text = document.getText();
+  const line = document.getText({
+    start: { line: params.position.line, character: 0 },
+    end: { line: params.position.line + 1, character: 0 },
+  }); 
+  const isMethodLine = line.includes('call(')
+
+  logger.info('completetion line', line)
+
+  if (triggerCharacter === ':') {
+    if (isMethodLine) {
+      const methods = getMethods(text)
+      const methodNames = Object.keys(methods)
+      
+      return methodNames.map((methodName) => ({
+        label: methodName,
+        kind: CompletionItemKind.Method
+      }))
+    }
+  }
+
+  return [];
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
   logger.info('Completion resolve requested', { label: item.label });
 
+  // TODO 
   if (item.data === 1) {
     item.documentation = 'This inserts the word "hello"';
   } else if (item.data === 2) {
