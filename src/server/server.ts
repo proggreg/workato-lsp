@@ -265,7 +265,7 @@ function getMethod(text: string, word: string) {
 
 function parseMethods(text: string, uri: string) {
   const lines = text.split(os.EOL)
-  const methodsStart = lines.findIndex((line) => line.includes('methods'))
+  const methodsStart = lines.findIndex((line) => line.includes('methods:'))
   let index = methodsStart
   const braces = []
   
