@@ -3,7 +3,7 @@
   "displayName": "Workato Connector LSP",
   "publisher": "gregfield",
   "description": "",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -39,9 +39,11 @@
   "scripts": {
     "compile": "tsc -b",
     "watch": "tsc -b -w",
-    "bundle": "esbuild src/client/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
-    "package": "npx vsce package",
-    "publish": "npx vsce publish"
+    "bundle:client": "esbuild src/client/extension.ts --bundle --outfile=out/client/extension.js --external:vscode --format=cjs --platform=node",
+    "bundle:server": "esbuild src/server/server.ts --bundle --outfile=out/server/server.js --format=cjs --platform=node",
+    "bundle": "npm run bundle:client && npm run bundle:server",
+    "package": "npm run bundle && npx vsce package",
+    "publish": "npm run bundle && npx vsce publish"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1",
