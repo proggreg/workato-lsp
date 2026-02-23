@@ -39,6 +39,7 @@
   "scripts": {
     "compile": "tsc -b",
     "watch": "tsc -b -w",
+    "test": "vitest",
     "bundle:client": "esbuild src/client/extension.ts --bundle --outfile=out/client/extension.js --external:vscode --format=cjs --platform=node",
     "bundle:server": "esbuild src/server/server.ts --bundle --outfile=out/server/server.js --format=cjs --platform=node",
     "bundle": "npm run bundle:client && npm run bundle:server",
@@ -46,14 +47,22 @@
     "publish": "npm run bundle && npx vsce publish"
   },
   "dependencies": {
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-ruby": "^0.23.1",
     "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.11"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.75.0",
     "esbuild": "^0.27.3",
-    "typescript": "^5.3.3"
+    "eslint": "^10.0.1",
+    "globals": "^17.3.0",
+    "jiti": "^2.6.1",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.56.0",
+    "vitest": "^4.0.18"
   }
 }
