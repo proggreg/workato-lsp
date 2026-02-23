@@ -16,24 +16,22 @@ import {
   DefinitionParams,
   Location,
   Position,
-  SymbolKind,
-  SymbolInformation,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as path from 'path';
-import * as os from 'os';
 import { Logger } from './logger';
-import { Range } from 'vscode-languageserver';
-
+import { DocumentSymbol, Range } from 'vscode-languageserver';
+import { DocumentParser } from './documentParser';
 // Set up logging to a file in the user's home directory
 const logPath = path.join('.', '.test-lsp', 'server.log');
 
 const logger = new Logger(logPath);
 const methods = new Map<string, { params: string, range: Range, uri: string }>()
-
+const symbolTable = new Map<string, DocumentSymbol>();
 // Create connection and document manager
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
+const documentParser = new DocumentParser()
 
 logger.setConnection(connection);
 logger.info('Language server starting...');
@@ -67,28 +65,15 @@ connection.onDidOpenTextDocument(() => {
   logger.info("onDidOpenTextDocument")
 })
 
-connection.onDidChangeTextDocument(({contentChanges, textDocument}) => {
+connection.onDidChangeTextDocument(({ contentChanges, textDocument }) => {
   logger.info('onDidChangeTextDocument')
   const text = contentChanges[contentChanges.length - 1].text;
   // parseMethods(text, textDocument.uri as Uri)
   logger.info('onDidChangeTextDocument methods', methods.size)
 })
 
-connection.onDocumentSymbol(({}) => {
-
-  const symbols: SymbolInformation[] = []
-
-  for (const [key, value] of methods.entries()) {
-    console.log(key, value);
-    const { range, uri } = value
-    
-    symbols.push({
-      name: key,
-      kind: SymbolKind.Method,
-      location: { range, uri: uri }
-    })
-  }
-    return symbols;
+connection.onDocumentSymbol(({ }) => {
+  return documentParser.getSymbols();
 })
 
 connection.onNotification((method, params) => {
@@ -112,65 +97,62 @@ documents.onWillSaveWaitUntil((event) => {
 
 
 // Provide completions
-connection.onCompletion((params: CompletionParams): CompletionItem[] => {
-  logger.info('Completion requested', params);
-  const triggerCharacter = params.context?.triggerCharacter
-  const document = documents.get(params.textDocument.uri);
+// connection.onCompletion((params: CompletionParams): CompletionItem[] => {
+//   logger.info('Completion requested', params);
+//   const triggerCharacter = params.context?.triggerCharacter
+//   const document = documents.get(params.textDocument.uri);
 
-  
+//   if (!document) {
+//     return [];
+//   }
 
-  if (!document) {
-    return [];
-  }
+//   const text = document.getText();
 
-  const text = document.getText();
-  
-  const line = document.getText({
-    start: { line: params.position.line, character: 0 },
-    end: { line: params.position.line + 1, character: 0 },
-  }); 
-  const isMethodLine = line.includes('call(')
+//   const line = document.getText({
+//     start: { line: params.position.line, character: 0 },
+//     end: { line: params.position.line + 1, character: 0 },
+//   });
+//   const isMethodLine = line.includes('call(')
 
-  logger.info('completetion line', line)
+//   logger.info('completetion line', line)
 
-  if (triggerCharacter === ':') {
-    if (isMethodLine) {
-      const methodNames = Array.from(methods.keys())
-      
-      return methodNames.map((methodName) => ({
-        label: methodName,
-        kind: CompletionItemKind.Method
-      }))
-    }
-  }
+//   if (isMethodLine && !line.includes(',')) {
+//     const methodNames = documentParser.getMethodNames()
+//     if (methodNames.find((methodName) => line.includes(methodName))) {
+//       return []
+//     }
+//     return methodNames.map((name) => CompletionItem.create(name))
+//   }
 
-  if (triggerCharacter === ',') {
-    if (isMethodLine) {
-      // Only trigger if there is exactly one comma in the line
-      const commaCount = (line.match(/,/g) || []).length;
-      if (commaCount === 1) {
-        const methodName = line.split('call(:')[1].split(',')[0];
-        const method = methods.get(methodName);
-        let completionText = method?.params;
-        
-        if (!line.includes(')')) {
-          completionText += ')'
-        }
+//   if (triggerCharacter === ',') {
+//     if (isMethodLine) {
+//       // Only trigger if there is exactly one comma in the line
+//       const commaCount = (line.match(/,/g) || []).length;
+//       if (commaCount === 1) {
+//         const methodName = line.split('call(:')[1].split(',')[0];
+//         const method = methods.get(methodName);
+//         let completionText = method?.params;
 
-        logger.info('completion completionText', completionText);
+//         if (!line.includes(')')) {
+//           completionText += ')'
+//         }
 
-        if (completionText) {
-          return [{
-            label: completionText,
-            kind: CompletionItemKind.Variable
-          }];
-        }
-      }
-    }
-  }
+//         logger.info('completion completionText', completionText);
 
-  return [];
-});
+//         if (completionText) {
+//           return [{
+//             label: completionText,
+//             kind: CompletionItemKind.Variable
+//           }];
+//         }
+//       }
+//     }
+//   }
+
+//   return [];
+// });
+
+
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
   logger.info('Completion resolve requested', { label: item.label });
@@ -241,7 +223,7 @@ function getMethod(text: string, word: string) {
     if (line.includes('lambda') && line.includes(word)) {
       let margin = lines[index].search(/\S/);
       if (margin === -1) margin = 0;
-      let i = index 
+      let i = index
       let end = false
 
       while (!end && i < lines.length) {
@@ -263,59 +245,6 @@ function getMethod(text: string, word: string) {
   return methodDefinition
 }
 
-function parseMethods(text: string, uri: string) {
-  const lines = text.split(os.EOL)
-  const methodsStart = lines.findIndex((line) => line.includes('methods:'))
-  let index = methodsStart
-  const braces = []
-  
-  while (index < lines.length) {
-    let line = lines[index]
-    logger.info('line', line) 
-    
-    if (!line) {
-      index++
-      continue
-    }
-    line = line.trim()
-
-    if (line.includes('{')) {
-      braces.push('{')
-    } else if (line.includes('}')) {
-      braces.pop()
-    }
-    if (line.includes('lambda')) {
-      const methodName = line.split(':').shift()
-      if (methodName) {
-        if (line.includes('|')) {
-          const params = line.split('|')
-          logger.info('method params', params)
-          if (params.length) {
-            const paramNames = params[1].split(',').map((param) => ' ' + param.trim()).join()
-            logger.info('params', paramNames)
-            const {range} = Location.create(
-              uri,
-              {
-                start: Position.create(index, 0),
-                end: Position.create(index, 0),
-              }
-            );
-            // const range = new Range({line: index, character: index}, index);
-            methods.set(methodName, { params: paramNames, range, uri })
-          }
-        }
-      }
-    }
-
-    if (!braces.length) {
-      break
-    }
-    index++
-  }
-
-  return methods
-}
-
 // Go to definition for Workato connector method calls
 // Handles: call(:method_name, ...) → jumps to method_name: lambda do|{
 connection.onDefinition((params: DefinitionParams): Location | null => {
@@ -329,7 +258,7 @@ connection.onDefinition((params: DefinitionParams): Location | null => {
   const line = document.getText({
     start: { line: params.position.line, character: 0 },
     end: { line: params.position.line + 1, character: 0 },
-  }); 
+  });
 
   // Find if cursor is on a symbol inside call(:symbol_name
   // Match call(:method_name with optional whitespace variations
@@ -389,7 +318,9 @@ documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>) => 
 documents.onDidOpen((event) => {
   logger.info('Document opened', { uri: event.document.uri });
   const text = event.document.getText()
-  parseMethods(text, event.document.uri)
+
+  documentParser.parseDocument(text)
+
   validateDocument(event.document);
 });
 
