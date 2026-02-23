@@ -1,1 +1,1 @@
-{"root":["./src/client/extension.ts","./src/server/logger.ts","./src/server/server.ts"],"version":"5.9.3"}
+{"root":["./src/client/extension.ts","./src/server/documentparser.ts","./src/server/logger.ts","./src/server/server.ts","./src/tests/documentparser/parseactions.test.ts"],"version":"5.9.3"}
