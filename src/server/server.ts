@@ -16,9 +16,12 @@ import {
   DefinitionParams,
   Location,
   Position,
+  Range,
   DocumentFormattingParams,
   DocumentRangeFormattingParams,
   TextEdit,
+  RenameParams,
+  WorkspaceEdit,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as path from "path";
@@ -59,6 +62,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       documentFormattingProvider: true,
       documentRangeFormattingProvider: true,
+      renameProvider: true,
     },
   };
 });
@@ -395,6 +399,66 @@ connection.onDocumentRangeFormatting(
     );
   },
 );
+
+connection.onRenameRequest((params: RenameParams): WorkspaceEdit | null => {
+  logger.info("Rename requested", params);
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return null;
+
+  const text = document.getText();
+  const offset = document.offsetAt(params.position);
+  const wordRange = getWordAtOffset(text, offset);
+  if (!wordRange) return null;
+
+  const methodName = text.substring(wordRange.start, wordRange.end);
+  const newName = params.newName;
+  const edits: TextEdit[] = [];
+  const lines = text.split("\n");
+
+  // Rename definition: `method_name: lambda`
+  const defPattern = new RegExp(`^(\\s*)${methodName}:(\\s*lambda)`);
+  for (let i = 0; i < lines.length; i++) {
+    const m = defPattern.exec(lines[i]);
+    if (m) {
+      const col = m[1].length;
+      edits.push(
+        TextEdit.replace(
+          Range.create(
+            Position.create(i, col),
+            Position.create(i, col + methodName.length),
+          ),
+          newName,
+        ),
+      );
+    }
+  }
+
+  // Rename all call(:method_name) sites
+  const callPattern = new RegExp(`call\\(\\s*:${methodName}(?=[,)\\s])`, "g");
+  for (let i = 0; i < lines.length; i++) {
+    let match: RegExpExecArray | null;
+    callPattern.lastIndex = 0;
+    while ((match = callPattern.exec(lines[i])) !== null) {
+      // The symbol starts after "call(:" and optional whitespace — find ":" then +1
+      const colonIndex = lines[i].indexOf(":", match.index);
+      const symbolStart = colonIndex + 1;
+      edits.push(
+        TextEdit.replace(
+          Range.create(
+            Position.create(i, symbolStart),
+            Position.create(i, symbolStart + methodName.length),
+          ),
+          newName,
+        ),
+      );
+    }
+  }
+
+  if (edits.length === 0) return null;
+
+  logger.info("Rename edits", { methodName, newName, editCount: edits.length });
+  return { changes: { [params.textDocument.uri]: edits } };
+});
 
 // Validate documents on change
 documents.onDidChangeContent(
