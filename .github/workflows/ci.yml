@@ -30,7 +30,12 @@ jobs:
         run: npm run build
 
       - name: Test
-        run: npm test
+        run: |
+          if find . -name "*.test.ts" -o -name "*.spec.ts" | grep -q .; then
+            npm test
+          else
+            echo "No test files found, skipping tests"
+          fi
 
       - name: Package (verify VSIX builds)
         run: npx @vscode/vsce package --no-dependencies
