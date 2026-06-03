@@ -21,7 +21,7 @@ let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
   const serverModule = context.asAbsolutePath(
-    path.join("..", "out", "server", "server.js"),
+    path.join("out", "server", "server.js"),
   );
 
   const outputChannel = window.createOutputChannel("Workato LSP");
