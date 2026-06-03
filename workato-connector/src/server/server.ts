@@ -16,7 +16,6 @@ import {
   DefinitionParams,
   Location,
   Position,
-  Range,
   DocumentFormattingParams,
   DocumentRangeFormattingParams,
   TextEdit,
@@ -25,9 +24,13 @@ import {
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as path from "path";
-import * as os from "os";
 import { Logger } from "./logger";
 import { WorkatoFormatter } from "./workatoFormatter";
+import { DocumentParser } from "./documentParser";
+import {
+  DocumentSymbol,
+  DocumentSymbolParams,
+} from "vscode-languageserver/node";
 
 // Set up logging to a file in the user's home directory
 const logPath = path.join(".", ".test-lsp", "server.log");
@@ -37,6 +40,8 @@ const logger = new Logger(logPath);
 // Create connection and document manager
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
+
+const documentParser = new DocumentParser();
 
 logger.setConnection(connection);
 logger.info("Language server starting...");
@@ -62,6 +67,7 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       documentFormattingProvider: true,
       documentRangeFormattingProvider: true,
+      documentSymbolProvider: true,
       renameProvider: true,
     },
   };
@@ -400,6 +406,12 @@ connection.onDocumentRangeFormatting(
   },
 );
 
+connection.onDocumentSymbol(
+  (_params: DocumentSymbolParams): DocumentSymbol[] => {
+    return documentParser.getSymbols();
+  },
+);
+
 connection.onRenameRequest((params: RenameParams): WorkspaceEdit | null => {
   logger.info("Rename requested", params);
   const document = documents.get(params.textDocument.uri);
@@ -410,72 +422,21 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit | null => {
   const wordRange = getWordAtOffset(text, offset);
   if (!wordRange) return null;
 
-  const methodName = text.substring(wordRange.start, wordRange.end);
+  const word = text.substring(wordRange.start, wordRange.end);
   const newName = params.newName;
-  const edits: TextEdit[] = [];
-  const lines = text.split("\n");
 
-  // Rename definition: `method_name: lambda`
-  const defPattern = new RegExp(`^(\\s*)${methodName}:(\\s*lambda)`);
-  for (let i = 0; i < lines.length; i++) {
-    const m = defPattern.exec(lines[i]);
-    if (m) {
-      const col = m[1].length;
-      edits.push(
-        TextEdit.replace(
-          Range.create(
-            Position.create(i, col),
-            Position.create(i, col + methodName.length),
-          ),
-          newName,
-        ),
-      );
-    }
+  // Try method occurrences first (definition + call sites via tree-sitter)
+  let ranges = documentParser.findMethodOccurrences(word);
+
+  // Fallback: identifier occurrences (variables, params) via tree-sitter
+  if (ranges.length === 0) {
+    ranges = documentParser.findIdentifierOccurrences(word);
   }
 
-  // Rename all call(:method_name) sites
-  const callPattern = new RegExp(`call\\(\\s*:${methodName}(?=[,)\\s])`, "g");
-  for (let i = 0; i < lines.length; i++) {
-    let match: RegExpExecArray | null;
-    callPattern.lastIndex = 0;
-    while ((match = callPattern.exec(lines[i])) !== null) {
-      const colonIndex = lines[i].indexOf(":", match.index);
-      const symbolStart = colonIndex + 1;
-      edits.push(
-        TextEdit.replace(
-          Range.create(
-            Position.create(i, symbolStart),
-            Position.create(i, symbolStart + methodName.length),
-          ),
-          newName,
-        ),
-      );
-    }
-  }
+  if (ranges.length === 0) return null;
 
-  // Fallback: rename all word-boundary occurrences in the file
-  if (edits.length === 0) {
-    const varPattern = new RegExp(`\\b${methodName}\\b`, "g");
-    for (let i = 0; i < lines.length; i++) {
-      let match: RegExpExecArray | null;
-      varPattern.lastIndex = 0;
-      while ((match = varPattern.exec(lines[i])) !== null) {
-        edits.push(
-          TextEdit.replace(
-            Range.create(
-              Position.create(i, match.index),
-              Position.create(i, match.index + methodName.length),
-            ),
-            newName,
-          ),
-        );
-      }
-    }
-  }
-
-  if (edits.length === 0) return null;
-
-  logger.info("Rename edits", { methodName, newName, editCount: edits.length });
+  const edits = ranges.map((range) => TextEdit.replace(range, newName));
+  logger.info("Rename edits", { word, newName, editCount: edits.length });
   return { changes: { [params.textDocument.uri]: edits } };
 });
 
@@ -483,12 +444,14 @@ connection.onRenameRequest((params: RenameParams): WorkspaceEdit | null => {
 documents.onDidChangeContent(
   (change: TextDocumentChangeEvent<TextDocument>) => {
     logger.info("Document changed", { uri: change.document.uri });
+    documentParser.parseDocument(change.document.getText());
     validateDocument(change.document);
   },
 );
 
 documents.onDidOpen((event) => {
   logger.info("Document opened", { uri: event.document.uri });
+  documentParser.parseDocument(event.document.getText());
   validateDocument(event.document);
 });
 
