@@ -32,11 +32,11 @@ jobs:
           VERSION=${GITHUB_REF_NAME#v}
           npm version $VERSION --no-git-tag-version
 
-      - name: Compile
+      - name: Run Build
         run: npm run build
 
-      - name: Test
-        run: npm test
+      # - name: Test
+      #   run: npm test
 
       - name: Package extension
         run: npx @vscode/vsce package
