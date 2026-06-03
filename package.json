@@ -1,6 +1,7 @@
 {
   "name": "workato-connector-lsp",
   "displayName": "Workato Connector LSP",
+  "publisher": "gregfield",
   "description": "",
   "version": "0.0.1",
   "engines": {
