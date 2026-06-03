@@ -2,6 +2,7 @@
   "name": "workato-connector",
   "displayName": "Workato Connector",
   "description": "Language support for Workato Connector SDK development",
+  "publisher": "gregfield",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.109.0"
@@ -80,7 +81,8 @@
   },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "test": "vitest run"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
