@@ -3,5 +3,8 @@
       "editor.defaultFormatter": "gregfield.workato-connector-lsp"
     },
     "editor.defaultFormatter": "gregfield.workato-connector-lsp",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "github-actions.workflows.pinned.workflows": [
+      ".github/workflows/release.yml"
+    ]
 }
