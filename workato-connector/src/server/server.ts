@@ -19,12 +19,18 @@ import {
   DocumentFormattingParams,
   DocumentRangeFormattingParams,
   TextEdit,
+  RenameParams,
+  WorkspaceEdit,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as path from "path";
-import * as os from "os";
 import { Logger } from "./logger";
 import { WorkatoFormatter } from "./workatoFormatter";
+import { DocumentParser } from "./documentParser";
+import {
+  DocumentSymbol,
+  DocumentSymbolParams,
+} from "vscode-languageserver/node";
 
 // Set up logging to a file in the user's home directory
 const logPath = path.join(".", ".test-lsp", "server.log");
@@ -34,6 +40,8 @@ const logger = new Logger(logPath);
 // Create connection and document manager
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
+
+const documentParser = new DocumentParser();
 
 logger.setConnection(connection);
 logger.info("Language server starting...");
@@ -59,6 +67,8 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       definitionProvider: true,
       documentFormattingProvider: true,
       documentRangeFormattingProvider: true,
+      documentSymbolProvider: true,
+      renameProvider: true,
     },
   };
 });
@@ -396,16 +406,52 @@ connection.onDocumentRangeFormatting(
   },
 );
 
+connection.onDocumentSymbol(
+  (_params: DocumentSymbolParams): DocumentSymbol[] => {
+    return documentParser.getSymbols();
+  },
+);
+
+connection.onRenameRequest((params: RenameParams): WorkspaceEdit | null => {
+  logger.info("Rename requested", params);
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return null;
+
+  const text = document.getText();
+  const offset = document.offsetAt(params.position);
+  const wordRange = getWordAtOffset(text, offset);
+  if (!wordRange) return null;
+
+  const word = text.substring(wordRange.start, wordRange.end);
+  const newName = params.newName;
+
+  // Try method occurrences first (definition + call sites via tree-sitter)
+  let ranges = documentParser.findMethodOccurrences(word);
+
+  // Fallback: identifier occurrences (variables, params) via tree-sitter
+  if (ranges.length === 0) {
+    ranges = documentParser.findIdentifierOccurrences(word);
+  }
+
+  if (ranges.length === 0) return null;
+
+  const edits = ranges.map((range) => TextEdit.replace(range, newName));
+  logger.info("Rename edits", { word, newName, editCount: edits.length });
+  return { changes: { [params.textDocument.uri]: edits } };
+});
+
 // Validate documents on change
 documents.onDidChangeContent(
   (change: TextDocumentChangeEvent<TextDocument>) => {
     logger.info("Document changed", { uri: change.document.uri });
+    documentParser.parseDocument(change.document.getText());
     validateDocument(change.document);
   },
 );
 
 documents.onDidOpen((event) => {
   logger.info("Document opened", { uri: event.document.uri });
+  documentParser.parseDocument(event.document.getText());
   validateDocument(event.document);
 });
 
