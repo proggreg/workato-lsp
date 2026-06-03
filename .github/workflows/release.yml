@@ -28,7 +28,7 @@ jobs:
           npm version $VERSION --no-git-tag-version
 
       - name: Compile
-        run: npm run compile
+        run: npm run build
 
       - name: Package extension
         run: npx @vscode/vsce package
