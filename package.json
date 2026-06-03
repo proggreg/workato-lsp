@@ -1,43 +1,36 @@
 {
-  "name": "workato-connector-lsp",
-  "displayName": "Workato Connector LSP",
+  "name": "workato-lsp",
+  "version": "1.0.0",
   "publisher": "gregfield",
-  "description": "",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.75.0"
-  },
-  "categories": ["Programming Languages"],
-  "activationEvents": ["onLanguage:ruby"],
-  "main": "./out/client/extension.js",
-  "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "Workato Connector LSP",
-      "properties": {
-        "testLsp.trace.server": {
-          "scope": "window",
-          "type": "string",
-          "enum": ["off", "messages", "verbose"],
-          "default": "verbose",
-          "description": "Traces the communication between VS Code and the language server."
-        }
-      }
-    }
-  },
+  "description": "Language Server Protocol implementation for Workato Connector SDK development",
+  "main": "./out/server.js",
   "scripts": {
-    "compile": "tsc -b",
-    "watch": "tsc -b -w",
-    "package": "vsce package"
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node ./out/server.js --stdio",
+    "test": "npm run build && node test-validation.js",
+    "test-simple": "npm run build && node test-lsp.js",
+    "test-definition": "npm run build && node test-goto-definition.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proggreg/workato-lsp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/proggreg/workato-lsp/issues"
+  },
+  "homepage": "https://github.com/proggreg/workato-lsp#readme",
   "dependencies": {
-    "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
-    "vscode-languageserver-textdocument": "^1.0.11"
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-uri": "^3.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "@types/vscode": "^1.75.0",
-    "typescript": "^5.3.3"
+    "@types/node": "^25.2.3",
+    "typescript": "^5.9.3"
   }
 }

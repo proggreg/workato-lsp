@@ -1,0 +1,145 @@
+[2026-02-21T10:32:27.249Z] [INFO] Language server starting...
+[2026-02-21T10:32:27.250Z] [INFO] Log file: .test-lsp/server.log
+[2026-02-21T10:32:27.251Z] [INFO] Workato Connector Language server is listening
+[2026-02-21T10:32:27.252Z] [INFO] Server initializing... [{"rootUri":"file:///Users/gregfield/dev/workato-lsp/workato-connector","capabilities":["workspace","textDocument","window","general","notebookDocument"]}]
+[2026-02-21T10:32:27.252Z] [INFO] Server initialized successfully
+[2026-02-21T10:32:27.253Z] [INFO] Document opened [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-02-21T10:32:27.253Z] [INFO] line [null]
+[2026-02-21T10:32:27.253Z] [INFO] line [""]
+[2026-02-21T10:32:27.253Z] [INFO] validateDocument
+[2026-02-21T10:32:27.253Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-02-21T10:32:27.253Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-02-21T10:32:27.253Z] [INFO] validateDocument
+[2026-02-21T10:32:27.254Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-02-21T10:32:27.645Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/.test-lsp","type":1},{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/.test-lsp/server.log","type":1}]}}]
+[2026-02-21T10:32:34.387Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-02-21T10:32:34.387Z] [INFO] validateDocument
+[2026-02-21T10:32:34.387Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-02-21T10:32:35.752Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","type":2}]}}]
+[2026-02-21T10:32:36.376Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","type":2}]}}]
+[2026-02-21T10:32:46.963Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T10:32:48.292Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T10:32:50.518Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T10:32:58.023Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:35.403Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:39.873Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:42.015Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:43.486Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:49.915Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:56.145Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:13:59.144Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:02.111Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:05.325Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:07.065Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:08.888Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:14.433Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:20.057Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:22.185Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:24.852Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:27.047Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:30.587Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:35.259Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:38.646Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:40.329Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:43.152Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:46.233Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:49.884Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:52.949Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:14:56.927Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:15:03.324Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-02-21T11:15:06.531Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/parse-connection-symbols.ts","type":2}]}}]
+[2026-06-02T18:08:18.797Z] [INFO] Language server starting...
+[2026-06-02T18:08:18.797Z] [INFO] Log file: .test-lsp/server.log
+[2026-06-02T18:08:18.798Z] [INFO] Workato Connector Language server is listening
+[2026-06-02T18:08:18.799Z] [INFO] Server initializing... [{"rootUri":"file:///Users/gregfield/dev/workato-lsp/workato-connector","capabilities":["workspace","textDocument","window","general","notebookDocument"]}]
+[2026-06-02T18:08:18.799Z] [INFO] Server initialized successfully
+[2026-06-02T18:08:18.800Z] [INFO] Document opened [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:18.800Z] [INFO] line ["  methods: {"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["    get_token: lambda do |connection|"]
+[2026-06-02T18:08:18.800Z] [INFO] method params [["get_token: lambda do ","connection",""]]
+[2026-06-02T18:08:18.800Z] [INFO] params [" connection"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["      connection[\"api_token\"]"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["    end,"]
+[2026-06-02T18:08:18.800Z] [INFO] line [""]
+[2026-06-02T18:08:18.800Z] [INFO] line ["    make_request: lambda do |method, path|"]
+[2026-06-02T18:08:18.800Z] [INFO] method params [["make_request: lambda do ","method, path",""]]
+[2026-06-02T18:08:18.800Z] [INFO] params [" method, path"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["      {"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["        url: \"https://api.example.com#{path}\","]
+[2026-06-02T18:08:18.800Z] [INFO] line ["        method: method"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["      }"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["    end,"]
+[2026-06-02T18:08:18.800Z] [INFO] line [""]
+[2026-06-02T18:08:18.800Z] [INFO] line ["    format_response: lambda do |response|"]
+[2026-06-02T18:08:18.800Z] [INFO] method params [["format_response: lambda do ","response",""]]
+[2026-06-02T18:08:18.800Z] [INFO] params [" response"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["      response.dig(\"data\") || response"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["    end"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["  }"]
+[2026-06-02T18:08:18.800Z] [INFO] line ["}"]
+[2026-06-02T18:08:18.800Z] [INFO] validateDocument
+[2026-06-02T18:08:18.800Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:18.800Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:18.800Z] [INFO] validateDocument
+[2026-06-02T18:08:18.800Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:19.160Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/.test-lsp/server.log","type":2}]}}]
+[2026-06-02T18:08:34.686Z] [INFO] onHover
+[2026-06-02T18:08:34.686Z] [INFO] Hover requested [{"word":"users","position":{"line":20,"character":50}}]
+[2026-06-02T18:08:35.840Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:35.840Z] [INFO] validateDocument
+[2026-06-02T18:08:35.840Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:36.445Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:36.445Z] [INFO] validateDocument
+[2026-06-02T18:08:36.445Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:36.680Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:36.680Z] [INFO] validateDocument
+[2026-06-02T18:08:36.680Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:36.695Z] [INFO] Completion requested [{"textDocument":{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"},"position":{"line":24,"character":9},"context":{"triggerKind":1}}]
+[2026-06-02T18:08:36.695Z] [INFO] completetion line ["        c\n"]
+[2026-06-02T18:08:36.744Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:36.744Z] [INFO] validateDocument
+[2026-06-02T18:08:36.745Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:36.927Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:36.927Z] [INFO] validateDocument
+[2026-06-02T18:08:36.927Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:37.079Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:37.079Z] [INFO] validateDocument
+[2026-06-02T18:08:37.079Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:37.339Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:37.339Z] [INFO] validateDocument
+[2026-06-02T18:08:37.339Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:37.669Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:37.672Z] [INFO] validateDocument
+[2026-06-02T18:08:37.672Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:08:37.674Z] [INFO] Completion requested [{"textDocument":{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"},"position":{"line":24,"character":14},"context":{"triggerKind":2,"triggerCharacter":":"}}]
+[2026-06-02T18:08:37.675Z] [INFO] completetion line ["        call(:)\n"]
+[2026-06-02T18:08:37.683Z] [INFO] Completion resolve requested [{"label":"format_response"}]
+[2026-06-02T18:08:43.587Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:08:43.587Z] [INFO] validateDocument
+[2026-06-02T18:08:43.587Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:03.674Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","type":2}]}}]
+[2026-06-02T18:09:08.623Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:08.623Z] [INFO] validateDocument
+[2026-06-02T18:09:08.623Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:08.838Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:08.838Z] [INFO] validateDocument
+[2026-06-02T18:09:08.838Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:09.533Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:09.533Z] [INFO] validateDocument
+[2026-06-02T18:09:09.533Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:09.879Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:09.879Z] [INFO] validateDocument
+[2026-06-02T18:09:09.879Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:10.090Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:10.090Z] [INFO] validateDocument
+[2026-06-02T18:09:10.090Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:10.278Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:10.278Z] [INFO] validateDocument
+[2026-06-02T18:09:10.278Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:12.649Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:12.649Z] [INFO] validateDocument
+[2026-06-02T18:09:12.649Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:13.083Z] [INFO] Document changed [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb"}]
+[2026-06-02T18:09:13.083Z] [INFO] validateDocument
+[2026-06-02T18:09:13.083Z] [INFO] Validation complete [{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","diagnosticCount":0}]
+[2026-06-02T18:09:13.918Z] [INFO] Notification received: workspace/didChangeWatchedFiles [{"params":{"changes":[{"uri":"file:///Users/gregfield/dev/workato-lsp/workato-connector/tests/connector.rb","type":2}]}}]
