@@ -16,14 +16,18 @@ import {
   DefinitionParams,
   Location,
   Position,
-} from 'vscode-languageserver/node';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import * as path from 'path';
-import * as os from 'os';
-import { Logger } from './logger';
+  DocumentFormattingParams,
+  DocumentRangeFormattingParams,
+  TextEdit,
+} from "vscode-languageserver/node";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import * as path from "path";
+import * as os from "os";
+import { Logger } from "./logger";
+import { WorkatoFormatter } from "../workatoFormatter";
 
 // Set up logging to a file in the user's home directory
-const logPath = path.join('.', '.test-lsp', 'server.log');
+const logPath = path.join(".", ".test-lsp", "server.log");
 
 const logger = new Logger(logPath);
 
@@ -32,13 +36,16 @@ const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
 
 logger.setConnection(connection);
-logger.info('Language server starting...');
+logger.info("Language server starting...");
 logger.info(`Log file: ${logPath}`);
 
+let rubyVersion = "auto";
+
 connection.onInitialize((params: InitializeParams): InitializeResult => {
-  logger.info('Server initializing...', {
+  rubyVersion = params.initializationOptions?.rubyVersion ?? "auto";
+  logger.info("Server initializing...", {
     rootUri: params.rootUri,
-    capabilities: Object.keys(params.capabilities),
+    rubyVersion,
   });
 
   return {
@@ -46,21 +53,23 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       completionProvider: {
         resolveProvider: true,
-        triggerCharacters: [':', ','],
+        triggerCharacters: [":", ","],
       },
       hoverProvider: true,
       definitionProvider: true,
+      documentFormattingProvider: true,
+      documentRangeFormattingProvider: true,
     },
   };
 });
 
 connection.onInitialized(() => {
-  logger.info('Server initialized successfully');
+  logger.info("Server initialized successfully");
 });
 
 connection.onDidChangeTextDocument(() => {
-  logger.info('onDidChangeTextDocument')
-})
+  logger.info("onDidChangeTextDocument");
+});
 
 connection.onNotification((method, params) => {
   logger.info(`Notification received: ${method}`, { params });
@@ -73,18 +82,18 @@ connection.onRequest((method, params) => {
 });
 
 documents.onWillSave((event) => {
-  logger.info('Document will save', { uri: event.document.uri });
+  logger.info("Document will save", { uri: event.document.uri });
 });
 
 documents.onWillSaveWaitUntil((event) => {
-  logger.info('Document will save (wait until)', { uri: event.document.uri });
+  logger.info("Document will save (wait until)", { uri: event.document.uri });
   return [];
 });
 
 // Provide completions
 connection.onCompletion((params: CompletionParams): CompletionItem[] => {
-  logger.info('Completion requested', params);
-  const triggerCharacter = params.context?.triggerCharacter
+  logger.info("Completion requested", params);
+  const triggerCharacter = params.context?.triggerCharacter;
   const document = documents.get(params.textDocument.uri);
 
   if (!document) {
@@ -95,44 +104,46 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
   const line = document.getText({
     start: { line: params.position.line, character: 0 },
     end: { line: params.position.line + 1, character: 0 },
-  }); 
-  const isMethodLine = line.includes('call(')
+  });
+  const isMethodLine = line.includes("call(");
 
-  logger.info('completetion line', line)
+  logger.info("completetion line", line);
 
-  if (triggerCharacter === ':') {
+  if (triggerCharacter === ":") {
     if (isMethodLine) {
-      const methods = getMethods(text)
-      const methodNames = Object.keys(methods)
-      
+      const methods = getMethods(text);
+      const methodNames = Object.keys(methods);
+
       return methodNames.map((methodName) => ({
         label: methodName,
-        kind: CompletionItemKind.Method
-      }))
+        kind: CompletionItemKind.Method,
+      }));
     }
   }
 
-  if (triggerCharacter === ',') {
+  if (triggerCharacter === ",") {
     if (isMethodLine) {
       // Only trigger if there is exactly one comma in the line
       const commaCount = (line.match(/,/g) || []).length;
       if (commaCount === 1) {
-        const methodName = line.split('call(:')[1].split(',')[0];
+        const methodName = line.split("call(:")[1].split(",")[0];
         const methods = getMethods(text);
         const method = methods[methodName];
         let completionText = method?.params;
-        
-        if (!line.includes(')')) {
-          completionText += ')'
+
+        if (!line.includes(")")) {
+          completionText += ")";
         }
 
-        logger.info('completion completionText', completionText);
+        logger.info("completion completionText", completionText);
 
         if (completionText) {
-          return [{
-            label: completionText,
-            kind: CompletionItemKind.Variable
-          }];
+          return [
+            {
+              label: completionText,
+              kind: CompletionItemKind.Variable,
+            },
+          ];
         }
       }
     }
@@ -142,15 +153,15 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-  logger.info('Completion resolve requested', { label: item.label });
+  logger.info("Completion resolve requested", { label: item.label });
 
-  // TODO 
+  // TODO
   if (item.data === 1) {
     item.documentation = 'This inserts the word "hello"';
   } else if (item.data === 2) {
     item.documentation = 'This inserts the word "world"';
   } else if (item.data === 3) {
-    item.documentation = 'This is a test keyword from the LSP';
+    item.documentation = "This is a test keyword from the LSP";
   }
 
   return item;
@@ -158,7 +169,7 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 
 // Provide hover information
 connection.onHover((params: HoverParams): Hover | null => {
-  logger.info('onHover')
+  logger.info("onHover");
   const document = documents.get(params.textDocument.uri);
   if (!document) {
     return null;
@@ -174,117 +185,120 @@ connection.onHover((params: HoverParams): Hover | null => {
   }
 
   const word = text.substring(wordRange.start, wordRange.end);
-  logger.info('Hover requested', { word, position: params.position });
+  logger.info("Hover requested", { word, position: params.position });
 
-  if (!word) return null
+  if (!word) return null;
 
-  const signature = getMethod(text, word)
+  const signature = getMethod(text, word);
 
   if (signature) {
     return {
       contents: {
-        kind: 'markdown',
-        value: ['```ruby', signature, '```'].join('\n')
-      }
-    }
+        kind: "markdown",
+        value: ["```ruby", signature, "```"].join("\n"),
+      },
+    };
   }
 
   return null;
 });
 
 function getMethod(text: string, word: string) {
-  const lines = text.split('\n')
-  const methodsStart = lines.findIndex((line) => line.includes('methods'))
-  if (methodsStart === -1) return ''
-  let index = methodsStart
-  let methodDefinition = ''
+  const lines = text.split("\n");
+  const methodsStart = lines.findIndex((line) => line.includes("methods"));
+  if (methodsStart === -1) return "";
+  let index = methodsStart;
+  let methodDefinition = "";
 
   while (index < lines.length) {
-    const line = lines[index]
+    const line = lines[index];
 
     if (!line) {
-      index++
-      continue
+      index++;
+      continue;
     }
 
-    if (line.includes('lambda') && line.includes(word)) {
+    if (line.includes("lambda") && line.includes(word)) {
       let margin = lines[index].search(/\S/);
       if (margin === -1) margin = 0;
-      let i = index 
-      let end = false
+      let i = index;
+      let end = false;
 
       while (!end && i < lines.length) {
-        methodDefinition += lines[i].substring(margin) + '\n'
+        methodDefinition += lines[i].substring(margin) + "\n";
 
-        if (lines[i].includes('end')) {
-          break
+        if (lines[i].includes("end")) {
+          break;
         }
-        i++
+        i++;
       }
     }
 
     if (methodDefinition) {
-      break
+      break;
     }
-    index++
+    index++;
   }
 
-  return methodDefinition
+  return methodDefinition;
 }
 
 function getMethods(text: string) {
-  const lines = text.split('\n')
-  const methodsStart = lines.findIndex((line) => line.includes('methods'))
-  let index = methodsStart
-  const methods: any = {}
-  const braces = []
-  
-  while (index < lines.length) {
-    let line = lines[index]
-    logger.info('line', line) 
-    
-    if (!line) {
-      index++
-      continue
-    }
-    line = line.trim()
+  const lines = text.split("\n");
+  const methodsStart = lines.findIndex((line) => line.includes("methods"));
+  let index = methodsStart;
+  const methods: any = {};
+  const braces = [];
 
-    if (line.includes('{')) {
-      braces.push('{')
-    } else if (line.includes('}')) {
-      braces.pop()
+  while (index < lines.length) {
+    let line = lines[index];
+    logger.info("line", line);
+
+    if (!line) {
+      index++;
+      continue;
     }
-    if (line.includes('lambda')) {
-      const methodName = line.split(':').shift()
+    line = line.trim();
+
+    if (line.includes("{")) {
+      braces.push("{");
+    } else if (line.includes("}")) {
+      braces.pop();
+    }
+    if (line.includes("lambda")) {
+      const methodName = line.split(":").shift();
       if (methodName) {
-        methods[methodName] = {} 
-        if (line.includes('|')) {
-          const params = line.split('|')
-          logger.info('method params', params)
+        methods[methodName] = {};
+        if (line.includes("|")) {
+          const params = line.split("|");
+          logger.info("method params", params);
           if (params.length) {
-            const paramNames = params[1].split(',').map((param) => ' ' + param.trim()).join()
-            logger.info('params', paramNames)
+            const paramNames = params[1]
+              .split(",")
+              .map((param) => " " + param.trim())
+              .join();
+            logger.info("params", paramNames);
             methods[methodName] = {
-              params: paramNames
-            }
+              params: paramNames,
+            };
           }
         }
       }
     }
 
     if (!braces.length) {
-      break
+      break;
     }
-    index++
+    index++;
   }
 
-  return methods
+  return methods;
 }
 
 // Go to definition for Workato connector method calls
 // Handles: call(:method_name, ...) → jumps to method_name: lambda do|{
 connection.onDefinition((params: DefinitionParams): Location | null => {
-  logger.info('go to def ', params)
+  logger.info("go to def ", params);
   const document = documents.get(params.textDocument.uri);
   if (!document) {
     return null;
@@ -294,7 +308,7 @@ connection.onDefinition((params: DefinitionParams): Location | null => {
   const line = document.getText({
     start: { line: params.position.line, character: 0 },
     end: { line: params.position.line + 1, character: 0 },
-  }); 
+  });
 
   // Find if cursor is on a symbol inside call(:symbol_name
   // Match call(:method_name with optional whitespace variations
@@ -307,70 +321,109 @@ connection.onDefinition((params: DefinitionParams): Location | null => {
     const symbolStart = match.index + match[0].length - match[1].length;
     const symbolEnd = symbolStart + match[1].length;
 
-    if (params.position.character >= symbolStart && params.position.character <= symbolEnd) {
+    if (
+      params.position.character >= symbolStart &&
+      params.position.character <= symbolEnd
+    ) {
       methodName = match[1];
       break;
     }
   }
 
   if (!methodName) {
-    logger.info('Definition requested but no call(:symbol) found at cursor', {
+    logger.info("Definition requested but no call(:symbol) found at cursor", {
       position: params.position,
     });
     return null;
   }
 
-  logger.info('Go to definition requested', { methodName, position: params.position });
+  logger.info("Go to definition requested", {
+    methodName,
+    position: params.position,
+  });
 
   // Search for the method definition: method_name: lambda do  or  method_name: lambda {
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   const defPattern = new RegExp(`^(\\s*)${methodName}:\\s*lambda\\s*(do|\\{)`);
 
   for (let i = 0; i < lines.length; i++) {
     const defMatch = defPattern.exec(lines[i]);
     if (defMatch) {
       const charOffset = defMatch[1].length; // skip leading whitespace
-      logger.info('Definition found', { methodName, line: i, character: charOffset });
-      return Location.create(
-        params.textDocument.uri,
-        {
-          start: Position.create(i, charOffset),
-          end: Position.create(i, charOffset + methodName.length),
-        }
-      );
+      logger.info("Definition found", {
+        methodName,
+        line: i,
+        character: charOffset,
+      });
+      return Location.create(params.textDocument.uri, {
+        start: Position.create(i, charOffset),
+        end: Position.create(i, charOffset + methodName.length),
+      });
     }
   }
 
-  logger.warn('Definition not found', { methodName });
+  logger.warn("Definition not found", { methodName });
   return null;
 });
 
+const showWarning = (msg: string) => connection.window.showWarningMessage(msg);
+
+connection.onDocumentFormatting(
+  async (params: DocumentFormattingParams): Promise<TextEdit[]> => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+    logger.info("Document formatting requested", {
+      uri: params.textDocument.uri,
+    });
+    return WorkatoFormatter.formatDocument(document, rubyVersion, showWarning);
+  },
+);
+
+connection.onDocumentRangeFormatting(
+  async (params: DocumentRangeFormattingParams): Promise<TextEdit[]> => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+    logger.info("Range formatting requested", {
+      uri: params.textDocument.uri,
+      range: params.range,
+    });
+    return WorkatoFormatter.formatRange(
+      document,
+      params.range,
+      rubyVersion,
+      showWarning,
+    );
+  },
+);
+
 // Validate documents on change
-documents.onDidChangeContent((change: TextDocumentChangeEvent<TextDocument>) => {
-  logger.info('Document changed', { uri: change.document.uri });
-  validateDocument(change.document);
-});
+documents.onDidChangeContent(
+  (change: TextDocumentChangeEvent<TextDocument>) => {
+    logger.info("Document changed", { uri: change.document.uri });
+    validateDocument(change.document);
+  },
+);
 
 documents.onDidOpen((event) => {
-  logger.info('Document opened', { uri: event.document.uri });
+  logger.info("Document opened", { uri: event.document.uri });
   validateDocument(event.document);
 });
 
 documents.onDidClose((event) => {
-  logger.info('Document closed', { uri: event.document.uri });
+  logger.info("Document closed", { uri: event.document.uri });
   // Clear diagnostics when document is closed
   connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
 });
 
 function validateDocument(document: TextDocument): void {
-  logger.info('validateDocument')
+  logger.info("validateDocument");
   const text = document.getText();
   const diagnostics: Diagnostic[] = [];
 
   // Example diagnostic: flag lines containing "TODO"
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   for (let i = 0; i < lines.length; i++) {
-    const todoIndex = lines[i].indexOf('TODO');
+    const todoIndex = lines[i].indexOf("TODO");
     if (todoIndex !== -1) {
       diagnostics.push({
         severity: DiagnosticSeverity.Warning,
@@ -378,13 +431,13 @@ function validateDocument(document: TextDocument): void {
           start: { line: i, character: todoIndex },
           end: { line: i, character: todoIndex + 4 },
         },
-        message: 'TODO found — don\'t forget to address this!',
-        source: 'test-lsp',
+        message: "TODO found — don't forget to address this!",
+        source: "test-lsp",
       });
     }
   }
 
-  logger.info('Validation complete', {
+  logger.info("Validation complete", {
     uri: document.uri,
     diagnosticCount: diagnostics.length,
   });
@@ -394,7 +447,7 @@ function validateDocument(document: TextDocument): void {
 
 function getWordAtOffset(
   text: string,
-  offset: number
+  offset: number,
 ): { start: number; end: number } | null {
   if (offset < 0 || offset >= text.length) {
     return null;
@@ -423,4 +476,4 @@ documents.listen(connection);
 // Start listening
 connection.listen();
 
-logger.info('Language server is listening');
+logger.info("Language server is listening");

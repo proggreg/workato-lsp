@@ -18,8 +18,8 @@
       end,
 
       execute: lambda do |connection, input|
-        response = call(:make_request, "GET", "/users/#{input['user_id']}")
-        call(:format_response, response)
+            response = call(:make_request, "GET", "/users/#{input['user_id']}")
+
       end,
 
       output_fields: lambda do

@@ -1,32 +1,208 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "Ruby",
-	"patterns": [
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
-		}
-	],
-	"repository": {
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.ruby",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.ruby",
-			"begin": "\"",
-			"end": "\"",
-			"patterns": [
-				{
-					"name": "constant.character.escape.ruby",
-					"match": "\\\\."
-				}
-			]
-		}
-	},
-	"scopeName": ""
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Ruby",
+  "scopeName": "source.ruby",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#heredoc" },
+    { "include": "#string_double" },
+    { "include": "#string_single" },
+    { "include": "#symbol_hash_key" },
+    { "include": "#symbol" },
+    { "include": "#number" },
+    { "include": "#keyword_def" },
+    { "include": "#keyword_class" },
+    { "include": "#keyword_module" },
+    { "include": "#keywords_control" },
+    { "include": "#keywords_other" },
+    { "include": "#literals" },
+    { "include": "#constant" },
+    { "include": "#variable" },
+    { "include": "#method_call" },
+    { "include": "#operator" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.number-sign.ruby",
+      "match": "#(?!\\{).*$"
+    },
+
+    "string_double": {
+      "name": "string.quoted.double.ruby",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "include": "#string_interpolation" },
+        { "name": "constant.character.escape.ruby", "match": "\\\\." }
+      ]
+    },
+
+    "string_single": {
+      "name": "string.quoted.single.ruby",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        { "name": "constant.character.escape.ruby", "match": "\\\\'|\\\\\\\\" }
+      ]
+    },
+
+    "string_interpolation": {
+      "name": "meta.embedded.line.ruby",
+      "begin": "#\\{",
+      "beginCaptures": {
+        "0": { "name": "punctuation.section.embedded.begin.ruby" }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.embedded.end.ruby" }
+      },
+      "patterns": [{ "include": "$self" }]
+    },
+
+    "heredoc": {
+      "name": "string.unquoted.heredoc.ruby",
+      "begin": "<<[-~]?([A-Z_][A-Z0-9_]*)",
+      "beginCaptures": { "1": { "name": "keyword.operator.heredoc.ruby" } },
+      "end": "^\\s*\\1$",
+      "patterns": [{ "include": "#string_interpolation" }]
+    },
+
+    "symbol_hash_key": {
+      "comment": "Ruby 1.9+ hash key: title: or 'key' =>",
+      "patterns": [
+        {
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*[?!]?)\\s*(?=:(?!:))",
+          "captures": {
+            "1": { "name": "constant.other.symbol.hashkey.ruby" }
+          }
+        },
+        {
+          "match": "\"([^\"]+)\"\\s*(?=>)",
+          "captures": {
+            "1": { "name": "string.quoted.double.ruby" }
+          }
+        }
+      ]
+    },
+
+    "symbol": {
+      "patterns": [
+        {
+          "name": "constant.other.symbol.ruby",
+          "match": "(?<![:\\w]):[a-zA-Z_][a-zA-Z0-9_]*[?!]?"
+        },
+        {
+          "name": "constant.other.symbol.ruby",
+          "begin": ":\"",
+          "end": "\"",
+          "patterns": [{ "include": "#string_interpolation" }]
+        },
+        {
+          "name": "constant.other.symbol.ruby",
+          "begin": ":'",
+          "end": "'"
+        }
+      ]
+    },
+
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.ruby",
+          "match": "\\b0x[0-9A-Fa-f][0-9A-Fa-f_]*\\b"
+        },
+        {
+          "name": "constant.numeric.binary.ruby",
+          "match": "\\b0b[01][01_]*\\b"
+        },
+        {
+          "name": "constant.numeric.float.ruby",
+          "match": "\\b\\d[\\d_]*\\.\\d[\\d_]*\\b"
+        },
+        {
+          "name": "constant.numeric.integer.ruby",
+          "match": "\\b\\d[\\d_]*\\b"
+        }
+      ]
+    },
+
+    "keyword_def": {
+      "match": "\\b(def)\\s+([a-z_][a-zA-Z0-9_]*[?!=]?)",
+      "captures": {
+        "1": { "name": "keyword.control.def.ruby" },
+        "2": { "name": "entity.name.function.ruby" }
+      }
+    },
+
+    "keyword_class": {
+      "match": "\\b(class)\\s+([A-Z][a-zA-Z0-9_:]*)",
+      "captures": {
+        "1": { "name": "keyword.control.class.ruby" },
+        "2": { "name": "entity.name.class.ruby" }
+      }
+    },
+
+    "keyword_module": {
+      "match": "\\b(module)\\s+([A-Z][a-zA-Z0-9_:]*)",
+      "captures": {
+        "1": { "name": "keyword.control.module.ruby" },
+        "2": { "name": "entity.name.namespace.ruby" }
+      }
+    },
+
+    "keywords_control": {
+      "name": "keyword.control.ruby",
+      "match": "\\b(if|elsif|else|unless|then|end|while|until|for|do|begin|rescue|ensure|raise|retry|return|next|break|yield|case|when|in|and|or|not)\\b"
+    },
+
+    "keywords_other": {
+      "name": "keyword.other.ruby",
+      "match": "\\b(require|require_relative|include|extend|prepend|attr_accessor|attr_reader|attr_writer|protected|private|public|alias|lambda|proc)\\b"
+    },
+
+    "literals": {
+      "patterns": [
+        {
+          "name": "constant.language.ruby",
+          "match": "\\b(nil|true|false)\\b"
+        },
+        { "name": "variable.language.ruby", "match": "\\b(self|super)\\b" },
+        { "name": "keyword.operator.lambda.ruby", "match": "->" }
+      ]
+    },
+
+    "constant": {
+      "name": "variable.other.constant.ruby",
+      "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+    },
+
+    "variable": {
+      "patterns": [
+        {
+          "name": "variable.other.readwrite.class.ruby",
+          "match": "@@[a-zA-Z_][a-zA-Z0-9_]*"
+        },
+        {
+          "name": "variable.other.readwrite.instance.ruby",
+          "match": "@[a-zA-Z_][a-zA-Z0-9_]*"
+        },
+        {
+          "name": "variable.other.readwrite.global.ruby",
+          "match": "\\$[a-zA-Z_][a-zA-Z0-9_]*"
+        }
+      ]
+    },
+
+    "method_call": {
+      "match": "\\b([a-z_][a-zA-Z0-9_]*[?!]?)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "entity.name.function.ruby" }
+      }
+    },
+
+    "operator": {
+      "name": "keyword.operator.ruby",
+      "match": "(===|==|!=|<=|>=|<=>|<<|>>|<|>|&&|\\|\\||=>|\\.\\.\\.|\\.\\.|-|\\+|\\*\\*|\\*|/|%|&|\\||\\^|~|!|\\?|::)"
+    }
+  }
 }

@@ -15,12 +15,16 @@ import {
   Location,
   Range,
   Position,
+  DocumentFormattingParams,
+  DocumentRangeFormattingParams,
+  TextEdit,
 } from "vscode-languageserver/node";
 
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { WorkatoValidator } from "./workatoValidator";
 import { WorkatoCompletion } from "./workatoCompletion";
 import { WorkatoDefinitionProvider } from "./workatoDefinition";
+import { WorkatoFormatter } from "./workatoFormatter";
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -51,6 +55,8 @@ connection.onInitialize((params: InitializeParams) => {
         resolveProvider: true,
       },
       definitionProvider: true,
+      documentFormattingProvider: true,
+      documentRangeFormattingProvider: true,
     },
   };
   if (hasWorkspaceFolderCapability) {
@@ -151,6 +157,22 @@ connection.onDefinition(
       );
     }
     return null;
+  },
+);
+
+connection.onDocumentFormatting(
+  async (params: DocumentFormattingParams): Promise<TextEdit[]> => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+    return WorkatoFormatter.formatDocument(document, "auto");
+  },
+);
+
+connection.onDocumentRangeFormatting(
+  async (params: DocumentRangeFormattingParams): Promise<TextEdit[]> => {
+    const document = documents.get(params.textDocument.uri);
+    if (!document) return [];
+    return WorkatoFormatter.formatRange(document, params.range, "auto");
   },
 );
 

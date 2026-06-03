@@ -1,0 +1,7 @@
+{
+    "[ruby]": {
+      "editor.defaultFormatter": "gregfield.workato-connector-lsp"
+    },
+    "editor.defaultFormatter": "gregfield.workato-connector-lsp",
+    "editor.formatOnSave": true
+}

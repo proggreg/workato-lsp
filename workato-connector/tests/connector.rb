@@ -20,7 +20,7 @@
       execute: lambda do |connection, input|
         response = call(:make_request, "GET", "/users/#{input['user_id']}")
         call(:format_response, response)
-        call(:make_request, method, path)
+            call(:make_request, method, path)
       end,
 
       output_fields: lambda do
@@ -31,7 +31,7 @@
 
   methods: {
     get_token: lambda do |connection|
-      connection["api_token"]
+        connection["api_token"]
     end,
 
     make_request: lambda do |method, path|

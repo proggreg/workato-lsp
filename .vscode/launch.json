@@ -2,6 +2,31 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/workato-connector"
+      ],
+      "outFiles": ["${workspaceFolder}/workato-connector/out/**/*.js"],
+      "sourceMaps": true,
+      "preLaunchTask": "build-extension"
+    },
+    {
+      "name": "Launch Extension + Attach LSP",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/workato-connector"
+      ],
+      "outFiles": ["${workspaceFolder}/workato-connector/out/**/*.js"],
+      "sourceMaps": true,
+      "preLaunchTask": "build-extension",
+      "env": {
+        "DEBUG_LSP": "1"
+      }
+    },
+    {
       "name": "Debug LSP Server",
       "type": "node",
       "request": "launch",
